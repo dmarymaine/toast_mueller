@@ -12,7 +12,6 @@ from .atm import (
     simulate_atmosphere,
     scale_atmosphere_by_frequency,
     update_atmospheric_noise_weights,
-    draw_weather,
 )
 from .binning import add_binner_args, init_binner, apply_binner
 from .classes import Telescope, Focalplane
@@ -23,16 +22,13 @@ from .export import add_tidas_args, output_tidas, add_spt3g_args, output_spt3g
 from .filters import (
     add_polyfilter_args,
     add_polyfilter2D_args,
-    add_common_mode_filter_args,
     apply_polyfilter,
     apply_polyfilter2D,
-    apply_common_mode_filter,
     add_groundfilter_args,
     apply_groundfilter,
 )
 from .gain import add_gainscrambler_args, scramble_gains
 from .mapmaker import add_mapmaker_args, apply_mapmaker
-from .filterbin import add_filterbin_args, apply_filterbin
 from .madam import add_madam_args, setup_madam, apply_madam
 from .noise import add_noise_args, simulate_noise, get_analytic_noise
 from .pointing import add_pointing_args, expand_pointing
@@ -44,6 +40,8 @@ from .sky_signal import (
     add_conviqt_args,
     apply_conviqt,
     apply_weighted_conviqt,
+    apply_weightedTEB_conviqt,
+    apply_mueller_ducc,
 )
 from .sss import add_sss_args, simulate_sss
 from .todground import (

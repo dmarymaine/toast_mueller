@@ -40,11 +40,12 @@ from .groundfilter import OpGroundFilter
 
 from .pointing_math import aberrate
 
-from .conviqt import OpSimConviqt, OpSimWeightedConviqt
+from .conviqt import OpSimConviqt, OpSimWeightedConviqt, OpSimTEBConviqt
+
+from .mueller_convolver import OpSimMueller
 
 from .atm import available_utils as atm_available_utils
 from .mapsampler import MapSampler
 
 from .madam import OpMadam
 from .mapmaker import OpMapMaker
-from .filterbin import OpFilterBin

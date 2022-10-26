@@ -11,7 +11,7 @@ from ..timing import function_timer, Timer
 from ..utils import Logger, Environment
 
 from ..map import DistPixels
-from ..todmap import OpSimPySM, OpSimScan, OpMadam, OpSimConviqt, OpSimWeightedConviqt
+from ..todmap import OpSimPySM, OpSimScan, OpMadam, OpSimConviqt, OpSimWeightedConviqt, OpSimTEBConviqt, OpSimMueller
 
 
 def add_sky_signal_args(parser):
@@ -313,6 +313,53 @@ def apply_conviqt(args, comm, data, cache_prefix="signal", verbose=True, mc=0):
 
     return cache_prefix
 
+@function_timer
+def apply_mueller_ducc(args, comm, data, cache_prefix="signal", verbose=True):
+   if (args.conviqt_sky_file is None
+       or args.conviqt_beam_file is None
+       or not args.simulate_sky
+   ):
+       return None
+
+   log = Logger.get()
+   timer = Timer()
+   timer.start()
+
+   if comm.world_rank == 0 and verbose:
+       log.info("Running Mueller convolution")
+
+   verbosity = 0
+   if verbose:
+      verbosity = 1
+   if args.debug:
+      verbosity = 10
+
+   ducc = OpSimMueller(
+       getattr(comm, "comm_"+args.conviqt_mpi_comm),
+       args.conviqt_sky_file,
+       args.conviqt_beam_file,
+       lmax = args.conviqt_lmax,
+       beammmax = args.conviqt_beam_mmax,
+       pol = True,
+       fwhm=args.conviqt_fwhm,
+       order=args.conviqt_order,
+       calibrate=args.conviqt_calibrate,
+       dxx=args.conviqt_dxx,
+       out=cache_prefix,
+       remove_monopole=args.conviqt_remove_monopole,
+       remove_dipole=args.conviqt_remove_dipole,
+       normalize_beam=args.conviqt_normalize_beam,
+       verbosity=verbosity,
+   )
+   ducc.exec(data)
+
+   if comm.comm_world is not None:
+       comm.comm_world.barrier()
+   if comm.world_rank == 0 and verbose:
+       timer.report_clear("Read and sample map")
+
+   return cache_prefix
+
 
 @function_timer
 def apply_weighted_conviqt(args, comm, data, cache_prefix="signal", verbose=True):
@@ -337,6 +384,54 @@ def apply_weighted_conviqt(args, comm, data, cache_prefix="signal", verbose=True
         verbosity = 10
 
     conviqt = OpSimWeightedConviqt(
+        getattr(comm, "comm_" + args.conviqt_mpi_comm),
+        args.conviqt_sky_file,
+        args.conviqt_beam_file,
+        lmax=args.conviqt_lmax,
+        beammmax=args.conviqt_beam_mmax,
+        pol=True,
+        fwhm=args.conviqt_fwhm,
+        order=args.conviqt_order,
+        calibrate=args.conviqt_calibrate,
+        dxx=args.conviqt_dxx,
+        out=cache_prefix,
+        remove_monopole=args.conviqt_remove_monopole,
+        remove_dipole=args.conviqt_remove_dipole,
+        normalize_beam=args.conviqt_normalize_beam,
+        verbosity=verbosity,
+    )
+    conviqt.exec(data)
+
+    if comm.comm_world is not None:
+        comm.comm_world.barrier()
+    if comm.world_rank == 0 and verbose:
+        timer.report_clear("Read and sample map")
+
+    return cache_prefix
+
+@function_timer
+def apply_weightedTEB_conviqt(args, comm, data, cache_prefix="signal", verbose=True):
+    if (
+        args.conviqt_sky_file is None
+        or args.conviqt_beam_file is None
+        or not args.simulate_sky
+    ):
+        return None
+
+    log = Logger.get()
+    timer = Timer()
+    timer.start()
+
+    if comm.world_rank == 0 and verbose:
+        log.info("Running Weighted Conviqt")
+
+    verbosity = 0
+    if verbose:
+        verbosity = 1
+    if args.debug:
+        verbosity = 10
+
+    conviqt = OpSiTEBConviqt(
         getattr(comm, "comm_" + args.conviqt_mpi_comm),
         args.conviqt_sky_file,
         args.conviqt_beam_file,
