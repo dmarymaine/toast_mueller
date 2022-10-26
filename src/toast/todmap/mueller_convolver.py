@@ -55,7 +55,7 @@ def truncate_blm(inp, lmax, kmax, epsilon=0.0):
             out.append(None)
         else:
             out.append((inp[i,:,: nalm(lmax,maxk)].copy(),maxk))
-        return out
+    return out
 
 class MuellerConvoler:
 
